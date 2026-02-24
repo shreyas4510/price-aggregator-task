@@ -17,7 +17,7 @@ async function startClient() {
 
 		const rpc = new RPC({ dht });
 		const client = rpc.connect(SERVER_PUBLIC_KEY);
-		console.log("Connected to RPC server");
+		logger.info("Connected to RPC server");
 
 		// ------------------------------- REQUEST ON DEMAND CALL -------------------------------
 		const onDemandResult = await client.request(
@@ -55,9 +55,7 @@ async function startClient() {
 
 		process.exit(0);
 	} catch (error) {
-		console.log(error);
-
-		console.error("RPC Client Error:", error.message);
+		logger.error("RPC Client Error:", error.message);
 		process.exit(1);
 	}
 }
