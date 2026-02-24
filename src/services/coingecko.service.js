@@ -1,13 +1,12 @@
 import axios from "axios";
 import env from "../config/env.js";
-import ApiError, { STATUS_CODE } from "../utils/error.js";
 import logger from "../utils/logger.js";
 
-const client = env.COINGECKO_BASE_URL;
+const coinGeckoUrl = env.COINGECKO_BASE_URL;
 export const fetchTopCoins = async () => {
     try {
         const { data } = await axios.get(
-            `${client}/coins/markets`,
+            `${coinGeckoUrl}/coins/markets`,
             {
                 params: {
                     vs_currency: "usd",
@@ -17,20 +16,22 @@ export const fetchTopCoins = async () => {
                 }
             }
         );
-
         return data.map((coin) => coin.id);
-    } catch (err) {
-        logger.error(`Error fetching top coins: ${err.message}`);
-        throw new ApiError(STATUS_CODE.INTERNAL_SERVER_ERROR, "Failed to fetch top coins");
+    } catch (error) {
+        logger.error(`Error fetching top coins: ${error.message}`);
+        throw error;
     }
 };
 
 export const fetchTickers = async (coinId) => {
     try {
-        const { data } = await axios.get(`${client}/coins/${coinId}/tickers`);
-
+        const { data } = await axios.get(`${coinGeckoUrl}/coins/${coinId}/tickers`);
         const validTickers = data.tickers
-            .filter(t => t.target === "USDT")
+            .filter(t => (
+                t.target === "USDT" &&
+                typeof t.last === "number" &&
+                t.last > 0
+            ))
             .slice(0, 3);
 
         if (validTickers.length === 0) {
@@ -41,8 +42,8 @@ export const fetchTickers = async (coinId) => {
             name: t.market.name,
             price: t.last
         }));
-    } catch (err) {
+    } catch (error) {
         logger.error(`Error fetching tickers for ${coinId}: ${err.message}`);
-        throw new ApiError(STATUS_CODE.INTERNAL_SERVER_ERROR, `Failed to fetch tickers for ${coinId}`);
+        throw error;
     }
 };
