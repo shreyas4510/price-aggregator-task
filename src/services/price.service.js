@@ -1,4 +1,4 @@
-import { savePrices } from "../respositories/price.repository.js";
+import { getPrices, savePrices } from "../respositories/price.repository.js";
 import logger from "../utils/logger.js";
 import { fetchTickers, fetchTopCoins } from "./coingecko.service.js";
 
@@ -28,5 +28,34 @@ export const collectAndStorePrices = async () => {
         }
     } catch (err) {
         logger.error(`Error in collectAndStorePrices: ${err.message}`);
+    }
+}
+
+export const getLatestPrices = async (pairs) => {
+    try {
+        if (!pairs?.length) return [];
+        const result = await getPrices({
+            options: { pair: { $in: pairs } },
+            sort: { timestamp: -1 },
+            limit: pairs.length
+        });
+        return result;
+    } catch (err) {
+        logger.error(`Error in getLatestPrices: ${err.message}`);
+        throw err;
+    }
+}
+
+export const getHistoricalPrices = async (pairs, from, to) => {
+    try {
+        const options = { pair: { $in: pairs } };
+        if (from || to) options.timestamp = {};
+        if (from) options.timestamp.$gte = new Date(from);
+        if (to) options.timestamp.$lte = new Date(to);
+
+        return await getPrices({ options, sort: { timestamp: -1 } });
+    } catch (err) {
+        logger.error(`Error in getHistoricalPrices: ${err.message}`);
+        throw err;
     }
 }

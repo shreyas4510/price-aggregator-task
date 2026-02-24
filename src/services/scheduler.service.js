@@ -9,3 +9,7 @@ export const startScheduler = () => {
     await collectAndStorePrices();
   });
 };
+
+export const runOnDemand = async () => {
+  return collectAndStorePrices();
+};
